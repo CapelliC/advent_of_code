@@ -1,0 +1,16 @@
+name: learn_dart
+description: mainly test solving advent of code, confronting with swipl
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.2
+
+dev_dependencies:
+  test: ^1.21.0
+  lints: ^6.0.0
+
+dependencies:
+  directed_graph: ^0.5.0
+  collection: ^1.19.1
+  intl: ^0.20.2
