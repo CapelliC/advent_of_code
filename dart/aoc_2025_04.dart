@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'aoc_swi_path.dart';
 
 typedef Rc = (int, int);
@@ -58,9 +57,7 @@ extension AreaExt on Area {
 void main(List<String> args) {
 
   var t0 = Stopwatch()..start();
-  Area area = File(aocKind(2025, 4, args))
-    .readAsStringSync().split('\n')
-      .where((ln) => ln.isNotEmpty).map((ln) => ln.split('')).toList();
+  Area area = aocLines(2025, 4, args).where((ln) => ln.isNotEmpty).map((ln) => ln.split('')).toList();
 
   Rcs rollsOfPaper() =>
     area.allRc.where((rc) => area.at(rc) == '@');

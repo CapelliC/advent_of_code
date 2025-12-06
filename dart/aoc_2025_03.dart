@@ -1,10 +1,9 @@
-import 'dart:io';
 import 'aoc_swi_path.dart';
 
 void main(List<String> args) {
 
   var t0 = Stopwatch()..start();
-  var lines = File(aocKind(2025, 3, args)).readAsStringSync().split('\n');
+  var lines = aocLines(2025, 3, args);
 
   (String, String) findFirstMaxAndTail(String line) {
     var currMax = line[0];

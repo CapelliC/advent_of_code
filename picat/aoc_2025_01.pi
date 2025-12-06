@@ -1,0 +1,11 @@
+import aoc_swi_path.
+
+main(Args) =>
+  Instructions = aocKind(2025, 1, Args),
+  printf("%s", Instructions).
+
+main => main(["input"]).
+/* 
+  Instructions = aocKind(2025, 1, ["input"]),
+  printf("%s", Instructions).
+*/

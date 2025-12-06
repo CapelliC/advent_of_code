@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'aoc_swi_path.dart';
 
 void main(List<String> args) {
@@ -34,7 +33,7 @@ void main(List<String> args) {
   }
 
   var t0 = Stopwatch()..start();
-  final ids = File(aocKind(2025, 2, args)).readAsStringSync().split(',').map((s) => s.split('-').map(int.parse).toList());
+  final ids = aocText(2025, 2, args).split(',').map((s) => s.split('-').map(int.parse).toList());
 
   int checkIds(bool Function(String) invalid) => ids.fold(0, (sum,pair) {
     for (int id = pair[0]; id <= pair[1]; ++id) {
