@@ -2,12 +2,12 @@ module aoc_swi_path.
 % import util.
 
 aocSwiPath(Year, Day) = Path =>
-  Path = to_fstring("../swipl/%d/%02d", Year, Day).
+  Path = to_fstring("../swipl/%d/day%02d", Year, Day).
 
 aocKind(Year, Day, Args) = Path =>
-  if Args.length < 2 then
+  if Args.length < 1 then
     File = "input"
   else 
-    File = Args[2]
+    File = Args[1]
   end,
   Path = to_fstring("%s/%s", aocSwiPath(Year, Day), File).

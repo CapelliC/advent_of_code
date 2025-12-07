@@ -1,10 +1,18 @@
+import util.
 import aoc_swi_path.
 
 main(Args) =>
   Instructions = aocKind(2025, 1, Args),
-  printf("%s", Instructions).
+  % printf("%s", Instructions).
+  Data = read_file_lines(Instructions),
+  %printf("%w", Data),
 
-main => main(["input"]).
+  foreach (I in Data)
+    printf("%w%n", I)
+  end.
+
+main => main(["small"]).
+
 /* 
   Instructions = aocKind(2025, 1, ["input"]),
   printf("%s", Instructions).
