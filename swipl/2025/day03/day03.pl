@@ -3,10 +3,10 @@
 solve(Kind,P1,P2) :-
     read_file_to_string(Kind,File,[]),
     string_lines(File,Lines),
-    foldl(day03line,Lines,(0,0,0),(_,P1,P2)).
+    maplist(string_codes,Lines,Codes),
+    foldl(day03line,Codes,(0,0,0),(_,P1,P2)).
 
-day03line(Line,(I,P1,P2),(J,Q1,Q2)) :-
-    string_codes(Line,Codes),
+day03line(Codes,(I,P1,P2),(J,Q1,Q2)) :-
     accum_max_of_len(2,Codes,P1,Q1),
     accum_max_of_len(12,Codes,P2,Q2),
     J is I+1. % ease debugging
@@ -35,40 +35,5 @@ find_max_and_tail([C|Cs],CurrMax,CurrTail, Max,Tail) :-
     ->  true
     ;   Max=CurrMax,
         Tail=CurrTail
-    ),
-    !.
+    ).
 find_max_and_tail([],CurrMax,CurrTail,CurrMax,CurrTail).
-
-/*
-solve(Kind,P1,P2) :-
-    read_file_to_string(Kind,File,[]),
-    string_lines(File,Lines),
-    foldl(day03line,Lines,(0,0),(P1,P2)).
-
-day03line(Line,(P1,P2),(Q1,Q2)) :-
-    string_codes(Line,Codes),
-    length(L1,2), aggregate_all(max(J), (peek(L1,Codes,Js), number_codes(J,Js)), J1),
-    Q1 is P1+J1,
-    length(L2,12), aggregate_all(max(J), (peek(L2,Codes,Js), number_codes(J,Js)), J2),
-    Q2 is P2+J2.
-
-peek([],_,[]) :- !.
-peek([_|N],Cs,[C|Js]) :-
-    append(_,[C|Rs],Cs),
-    peek(N,Rs,Js).
-*/
-
-/*
-day03line(Line,(P1,P2),(Q1,Q2)) :-
-    string_codes(Line,Codes),
-    aggregate_all(max(J), (peek(2,Codes,Js), number_codes(J,Js)), J1),
-    Q1 is P1+J1,
-    aggregate_all(max(J), (peek(12,Codes,Js), number_codes(J,Js)), J2),
-    Q2 is P2+J2.
-
-peek(0,_,[]) :- !.
-peek(N,Cs,[C|Js]) :-
-    append(_,[C|Rs],Cs),
-    M is N-1,
-    peek(M,Rs,Js).
-*/
