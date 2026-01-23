@@ -3,7 +3,7 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/high_order)).
 
-:- use_module(library(simplex)).
+:- use_module(library(nb_set)).
 
 solve(Kind, P1,P2) :-
     phrase_from_file(sequence(machine,Ms),Kind),!,
@@ -51,48 +51,47 @@ toggle_lights_steps(Trails,Target,Wirings,Steps,TotSteps) :-
 
 % part 2
 
-test_simplex_encoding(R) :-
-    %           x1   x2   x3  x4    x5    x6
-    %Wirings = [[3],[1,3],[2],[2,3],[0,2],[0,1]],
-    %Joltages = [3,5,4,7],
-
-    % encode Joltages eqs by hand
-    gen_state(S0),
-    constraint([x5,x6] = 3,    S0,S1),
-    constraint([x2,x6] = 5,    S1,S2),
-    constraint([x3,x4,x5] = 4, S2,S3),
-    constraint([x1,x2,x4] = 7, S3,S4),
-
-    % objective same as result
-    minimize([x1,x2,x3,x4,x5,x6],S4,S),
-
-    maplist(variable_value(S),[x1,x2,x3,x4,x5,x6],Rs),
-    sumlist(Rs,R).
-
 part2((_Lights,Wirings,Joltages),Steps) :-
-    gen_state(S0),
-    bind_joltages_wirings(Joltages,0,Wirings,S0,Sws),
-    findall(x(P), nth1(P,Wirings,_), Xs),
-    %integrals(Xs,Sws,Sob),
-    sequence(force_int,Xs,Sws,Sob),
-    minimize(Xs,Sob,S),
-    maplist(variable_value(S),Xs,Rs),
-    sumlist(Rs,Steps),
-    debug(day10,'~w',[sumlist(Rs,Steps)]).
+    JLT =.. [jl|Joltages],
+    findall(0,member(_,Joltages),Zs),
+    JL0 =.. [jl|Zs],
+    empty_nb_set(JL_s),
+    add_nb_set(JL0,JL_s),
+    increment_joltages_steps(Wirings,JLT,JL_s,0, Steps).
 
-force_int(X) --> constraint(integral(X)).
+increment_joltages_steps(Wirings,JL_t, JL_s,Steps, StepsTot) :-
+    (   debugging(part2)
+    ->  size_nb_set(JL_s,N),
+        debug(part2,'step ~w size ~w', [Steps,N])
+    ;   true
+    ),
+    (  add_nb_set(JL_t,JL_s,false)
+    -> StepsTot = Steps,
+       !
+    ;  empty_nb_set(UpdatedLevels),
+       forall((
+          gen_nb_set(JL_s,JL),
+          member(W,Wirings),
+          increment_joltage_levels(JL,W,JL_t, JL_u),
+          \+ add_nb_set(JL_u,JL_s,false)
+       ), add_nb_set(JL_u,UpdatedLevels)),
+       Steps1 is Steps + 1,
+       increment_joltages_steps(Wirings,JL_t, UpdatedLevels,Steps1,StepsTot)
+    ).
 
-bind_joltages_wirings([],_,_) --> [].
-bind_joltages_wirings([J|Joltages],Ji,Wirings) -->
-    {assign_joltages_wirings(Ji,Wirings,Cs), Jn is Ji+1},
-    constraint(Cs = J),
-    bind_joltages_wirings(Joltages,Jn,Wirings).
+increment_joltage_levels(JL,Wiring,JL_t, JL_u) :-
+    increment_joltage_levels(JL,Wiring, JL_u),
+    compare(Order,JL_t,JL_u),
+    ( Order == > ; Order == = ).
 
-assign_joltages_wirings(JoltageIndex,Wirings,Cs) :-
-    findall(x(C), (
-       nth1(C,Wirings,Ws),
-       memberchk(JoltageIndex,Ws)
-    ), Cs).
+increment_joltage_levels(JL,Wiring, JL_u) :-
+    duplicate_term(JL,JL_u),
+    forall(member(W,Wiring), (
+       A is W+1,
+       arg(A,JL,C),
+       D is C+1,
+       nb_setarg(A,JL_u,D)
+    )).
 
 % machine parsing
 

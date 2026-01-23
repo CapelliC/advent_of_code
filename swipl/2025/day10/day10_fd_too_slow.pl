@@ -3,7 +3,7 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/high_order)).
 
-:- use_module(library(simplex)).
+:- use_module(library(clpfd)).
 
 solve(Kind, P1,P2) :-
     phrase_from_file(sequence(machine,Ms),Kind),!,
@@ -51,48 +51,46 @@ toggle_lights_steps(Trails,Target,Wirings,Steps,TotSteps) :-
 
 % part 2
 
-test_simplex_encoding(R) :-
-    %           x1   x2   x3  x4    x5    x6
+test_fd_encoding :-
+    %           A   B     C   D     E     F
     %Wirings = [[3],[1,3],[2],[2,3],[0,2],[0,1]],
-    %Joltages = [3,5,4,7],
-
+    Vs = [A,B,C,D,E,F],
+    Joltages = [3,5,4,7],
     % encode Joltages eqs by hand
-    gen_state(S0),
-    constraint([x5,x6] = 3,    S0,S1),
-    constraint([x2,x6] = 5,    S1,S2),
-    constraint([x3,x4,x5] = 4, S2,S3),
-    constraint([x1,x2,x4] = 7, S3,S4),
+    3 #= E+F,
+    5 #= B+F,
+    4 #= C+D+E,
+    7 #= A+B+D,
 
-    % objective same as result
-    minimize([x1,x2,x3,x4,x5,x6],S4,S),
-
-    maplist(variable_value(S),[x1,x2,x3,x4,x5,x6],Rs),
-    sumlist(Rs,R).
+    max_list(Joltages,JMax),
+    Vs ins 0..JMax,
+    label(Vs), % problem has multiple solutions, will needs minimization
+    sumlist(Vs,R),
+    writeln(R:Vs).
 
 part2((_Lights,Wirings,Joltages),Steps) :-
-    gen_state(S0),
-    bind_joltages_wirings(Joltages,0,Wirings,S0,Sws),
-    findall(x(P), nth1(P,Wirings,_), Xs),
-    %integrals(Xs,Sws,Sob),
-    sequence(force_int,Xs,Sws,Sob),
-    minimize(Xs,Sob,S),
-    maplist(variable_value(S),Xs,Rs),
-    sumlist(Rs,Steps),
-    debug(day10,'~w',[sumlist(Rs,Steps)]).
+    length(Wirings,N),
+    length(Vs,N),
+    max_list(Joltages,JMax),
+    Vs ins 0..JMax,
+    once(sum_steps(Joltages,0,Wirings,Vs)),
+    sum(Vs,#=,Steps),
+    once(labeling([min(Steps)], Vs)),
+    debug(day10,'~w x ~w',[Steps,Joltages]).
 
-force_int(X) --> constraint(integral(X)).
+sum_steps([],_,_,_).
+sum_steps([J|Joltages],P,Wirings,Vs) :-
+    collect_wiring_factors(Wirings,P,Vs,SumVs),
+    sum(SumVs,#=,J),
+    Q is P+1,
+    sum_steps(Joltages,Q,Wirings,Vs).
 
-bind_joltages_wirings([],_,_) --> [].
-bind_joltages_wirings([J|Joltages],Ji,Wirings) -->
-    {assign_joltages_wirings(Ji,Wirings,Cs), Jn is Ji+1},
-    constraint(Cs = J),
-    bind_joltages_wirings(Joltages,Jn,Wirings).
-
-assign_joltages_wirings(JoltageIndex,Wirings,Cs) :-
-    findall(x(C), (
-       nth1(C,Wirings,Ws),
-       memberchk(JoltageIndex,Ws)
-    ), Cs).
+collect_wiring_factors([],_,[],[]).
+collect_wiring_factors([Ws|Wirings],P,[V|Vs],[V|Rest]) :-
+    memberchk(P,Ws),
+    collect_wiring_factors(Wirings,P,Vs,Rest).
+collect_wiring_factors([_|Wirings],P,[_|Vs],Rest) :-
+    collect_wiring_factors(Wirings,P,Vs,Rest).
 
 % machine parsing
 
