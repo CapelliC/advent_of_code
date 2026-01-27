@@ -11,6 +11,7 @@
       "program": "${file}",
       "cwd": "${fileDirname}",
       //"args": ["small"],
+      //"args": ["small2"],
     },
     
     {

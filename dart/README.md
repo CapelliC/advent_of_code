@@ -28,3 +28,23 @@ etc etc
 ## BUGS
 
 Note: there is a bug in day 5, as p2 is over the correct answer by 12, then I'll try to debug matching the SWI-Prolog solution ASAP.
+
+## Using Dart for debugging ease
+
+Day 11 part 2 has been solved after verifying the kind of graph, using SWI-Prolog:
+
+```
+:- use_module(library(ugraphs)).
+
+part2(NodeEdges,P2) :-
+
+    % check if graph is DAG (that implies is topologically sortable)
+    findall(S-T, (
+       member(S-Es,NodeEdges),
+       member(T,Es)
+    ), EdgesPairs),
+    vertices_edges_to_ugraph([],EdgesPairs,UGraph),
+    top_sort(UGraph,Sorted),
+    ...
+```    
+
