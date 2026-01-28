@@ -26,31 +26,26 @@ path(Curr,Target,NodeEdges,Seen,Path) :-
        path(Next,Target,NodeEdges,[Curr|Seen],Path)
     ).
 
-% expected method 1 from
-%  https://www.geeksforgeeks.org/dsa/number-of-paths-from-source-to-destination-in-a-directed-acyclic-graph/
 part2(NodeEdges,P2) :-
-    check_dag(NodeEdges,UGraph,_TopSorted),
+    check_dag(NodeEdges,UGraph,_TopoSorted),
     count_paths_(svr,fft,UGraph, FFT),
     count_paths_(fft,dac,UGraph, DAC),
     count_paths_(dac,out,UGraph, OUT),
     P2 is FFT*DAC*OUT.
 
 count_paths_(S,T,U,N) :-
-    forall(member(X-_,U),nb_delete(X)),
-    count_paths(S,T,U, N).
+    % NB: without cleanup, doesn't work
+    abolish_table_subgoals(count_paths(_,_,_,_)),
+    count_paths(S,T,U,N).
 
-count_paths(T,T,_, 1) :-
-    !.
-count_paths(S,_,_, N) :-
-    nb_current(S,N),
-    !.
-count_paths(S,T,UGraph, N) :-
-    memberchk(S-Cs,UGraph),
+:- table count_paths(+,+,+,-).
+count_paths(T,T,_,1).
+count_paths(S,T,U,N) :-
+    memberchk(S-Cs,U),
     aggregate_all(sum(V), (
        member(C,Cs),
-       count_paths(C,T,UGraph, V)
-    ),N),
-    nb_setval(S,N).
+       count_paths(C,T,U,V)
+    ),N).
 
 % check DAGness (implies topologically sortable)
 check_dag(NodeEdges,UGraph,TopSorted) :-
